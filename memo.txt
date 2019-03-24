@@ -1,0 +1,13 @@
+
+* クラス図
+
+```uml
+Minitest::Test <|-- ActiveSupport::TestCase
+ActiveSupport::TestCase <|-- ActionMailer::TestCase
+ActiveSupport::TestCase <|-- ActionView::TestCase
+ActiveSupport::TestCase <|-- ActiveJob::TestCase
+ActiveSupport::TestCase <|-- ActionDispatch::IntegrationTest
+ActionDispatch::IntegrationTest <|-- ActionDispatch::SystemTestCase
+ActiveSupport::TestCase <|-- ActionCable::TestCase
+ActiveSupport::TestCase <|-- ActionMailbox::TestCase
+```

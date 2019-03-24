@@ -1,0 +1,15 @@
+{
+  "name": "roda-first",
+  "version": "1.0.0",
+  "description": "roda-first",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "lint": "yarn --pure-lockfile && textlint '*.re'"
+  },
+  "dependencies": {
+    "textlint": "^8.2.1",
+    "textlint-plugin-review": "^0.3.3",
+    "textlint-rule-preset-ja-technical-writing": "^0.1.3"
+  }
+}
