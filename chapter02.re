@@ -138,9 +138,28 @@ end
 
 しかし、Rails 5.0でActionDispatch::IntegrationTestのパフォーマンスが大幅に改善され、実行速度の差は大分縮まりました。結果、コントローラーのテストでもActionDispatch::IntegrationTestが使用される事が推奨されるようになり、scaffoldで生成するコントローラーのテストでもActionDispatch::IntegrationTestが使用されるようになりました。
 
-なお、その際にActionController::TestCaseはgemに切り出してRails本体から削除する、という話があったのですが、何だかんだまだコードは残ったままになっています。とはいえ、機能追加等が行われる事は(恐らく)無いので、新規に追加するテストについてはActionDispatch::IntegrationTestを使用する事をおすすめします。
+因みにその際にActionController::TestCaseはgemに切り出してRails本体から削除するという話があったのですが、何だかんだまだコードRails本体に残ったままになっています。とはいえ、機能追加等が行われる事は(恐らく)無いので、新規に追加するテストについてはActionDispatch::IntegrationTestを使用する事をおすすめします。
 
 == ActionDispatch::IntegrationTest
+
+コントローラー(とルーティングテスト)の為のクラスです。基本的にはActionController::TestCaseと同じ目的です。ActionController::TestCaseと異なり、HTTPリクエスト先に任意のパスを指定出来し、ルーティングについても確認出来るようになっています。
+
+//list[integration_test][ActionDispatch::IntegrationTest]{
+  test "should get index" do
+    get users_url
+    assert_response :success
+  end
+
+  test "should create user" do
+    assert_difference('User.count') do
+      post users_url, params: { user: { email: @user.email, name: @user.name } }
+    end
+
+    assert_redirected_to user_url(User.last)
+  end
+//}
+
+
 == ActionDispatch::SystemTestCase
 == ActionCable::TestCase
 == ActionCable::Channel::TestCase
