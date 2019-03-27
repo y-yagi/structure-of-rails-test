@@ -48,7 +48,7 @@ Time.current # => Wed, 27 Mar 2019 11:56:38 JST +09:00
 例えば、何か既存の機能をdeprecateにしたい場合に、その機能がdeprecateになっている事を確認する為の@<code>{assert_deprecated}というアサーションがあります。これはRails全てのライブラリで使用したいアサーションなので、ActiveSupport::TestCaseで必要なmoduleがincldueされるようになっています。
 
 //list[assert_deprecated][assert_deprecated]{
-# update_attributesメソッドを使用するとdeprecateメッセージが出る事を確認したい
+# update_attributesメソッドを使用するとdeprecateメッセージが出る
 topic = Topic.find(1)
 assert_deprecated do
   topic.update_attributes("title" => "The First Topic Updated")
@@ -59,11 +59,11 @@ end
 
 == ActionMailer::TestCase
 
-Action Mailerのテスト用クラスです。当然のことですが、テストで実際にメールを送信するわけにはいきません。ActionMailer::TestCaseでは、メール送信処理が実行されても実際のメールの送信は行わず、代わりに送信処理が実行されたメールを配列で管理するようにしています。合わせて、送信処理が呼ばれた(または呼ばれていない)事を確認する為のアサーションを提供しています。
+メール(送信)のテストの為のクラスです。当然のことですが、テストで実際にメールを送信するわけにはいきません。ActionMailer::TestCaseでは、メール送信処理が実行されても実際のメールの送信は行わず、代わりに送信処理が実行されたメールを配列で管理するようにしています。合わせて、送信処理が呼ばれた(または呼ばれていない)事を確認する為のアサーションを提供しています。
 
 //list[assert_emails][assert_emails]{
 test "invite friend" do
-  # invite_friend_urlにPOSTしたら、招待用のメールが送信される事
+  # invite_friend_urlにPOSTしたら招待用のメールが送信される
   assert_emails 1 do
     post invite_friend_url, params: { email: 'friend@example.com' }
   end
@@ -74,10 +74,25 @@ end
 
 アサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailer/TestHelper.html} を参照してください。
 
+== ActiveJob::TestCase
+
+ジョブのテストの為のクラスです。メールと事なり、ジョブはテストで実際に実行しても問題無い事が多いでしょう。しかし例えば、「1時間後に実行されるジョブ」があった場合、テストで実際に1時間待つ訳にはいきません。ActiveJob::TestCaseでは、ジョブの登録処理が行われたらそのジョブを内部で保持し、どのようなジョブが登録されたかを確認出来るようにしています。当然、その登録された内容を確認する為のアサーションも提供されています。
+
+//list[assert_enqueued_jobs][assert_enqueued_jobs]{
+test "withdrawal" do
+  user = User.last
+  # ユーザが退会したらLoggingJobが登録される
+  assert_enqueued_with(job: LoggingJob) do
+    user.withdrawal
+  end
+end
+//}
+
+どのような引数が指定されたかチェックしたり、登録されたジョブを実行したりする事も出来るようになっています。アサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActiveJob/TestHelper.html} を参照してください。
+
 == ActionView::TestCase
 
-名前からAction Viewのテンプレートに関するテスト用のクラスかと推測されるかと思うのですが、実際はちょっと異なり、viewのhelperのテストの為のクラスです。ActionView::TestCaseではhelerを使用する為に必要なcontrollerやviewの生成処理を行ってくれます。
-
+名前からAction Viewのテンプレートに関するテスト用のクラスかと推測されるかと思うのですが、実際はちょっと異なりviewのhelperのテスト用のクラスです。ActionView::TestCaseではhelerを使用する為に必要なcontrollerやviewの生成処理を行ってくれます。
 
 //list[action_view_test_case][ActionView::TestCase]{
 module UsersHelper
@@ -97,12 +112,36 @@ end
 
 しかし、Rails 4.2よりhelperのテストはそもそも生成されなくなり@<fn>{helper}、このクラスが使用される事は無くなりました。また、helper単体でのテストはあまり意味が無い@<fn>{helper_test}のでは、という声もあり、このクラスを使用する事は基本的に無いかと思います。
 //footnote[helper][@<href>{https://github.com/rails/rails/commit/a34b6649d061977026db7124d834faccdf5bd8ef}]
-//footnote[helper_test][IntegrationテストやSystemテストviewのテストと合わせてやるのが良いのでは、という意見が多いです。]
+//footnote[helper_test][IntegrationテストやSystemテストビューのテストと合わせてやるのが良いのでは、という意見が多いです。]
 
 == ActionController::TestCase
+
+コントローラーのテストの為のクラスです。特定のコントローラーのメソッドに対して、HTTPリクエストの送信及びレスポンスの確認ができるようになっています。
+
+//list[action_controller_test_case][ActionController::TestCase]{
+test "should get index" do
+  get :index
+  assert_response :success
+end
+
+test "should create user" do
+  assert_difference('User.count') do
+    post(:create, params: { user: { email: @user.email, name: @user.name } })
+  end
+
+  assert_redirected_to user_url(User.last)
+end
+//}
+
+しかし同様にコントローラーのテストを行う為のクラスとしてActionDispatch::IntegrationTestがあります。ActionDispatch::IntegrationTestだとルーティングもセットでテストが出来る@<fn>{routing}、HTTPリクエストがより実際のリクエストに近い形で送信される等のメリットがあるのですが、実行はActionController::TestCaseの方が高速だった為、コントローラーのテストには長らくActionController::TestCaseが使われるようになっていました。
+//footnote[routing][ActionController::TestCaseは送信先にコントローラーのアクション名を指定する為、ルーティングのテストは出来なかったのでした。]
+
+しかし、Rails 5.0でActionDispatch::IntegrationTestのパフォーマンスが大幅に改善され、実行速度の差は大分縮まりました。結果、コントローラーのテストでもActionDispatch::IntegrationTestが使用される事が推奨されるようになり、scaffoldで生成するコントローラーのテストでもActionDispatch::IntegrationTestが使用されるようになりました。
+
+なお、その際にActionController::TestCaseはgemに切り出してRails本体から削除する、という話があったのですが、何だかんだまだコードは残ったままになっています。とはいえ、機能追加等が行われる事は(恐らく)無いので、新規に追加するテストについてはActionDispatch::IntegrationTestを使用する事をおすすめします。
+
 == ActionDispatch::IntegrationTest
 == ActionDispatch::SystemTestCase
-== ActiveJob::TestCase
 == ActionCable::TestCase
 == ActionCable::Channel::TestCase
 == ActionMailbox::TestCase
