@@ -28,6 +28,17 @@ assert_not_equal 5, User.count
 //footnote[refute][当時のちゃんとした議論が見つからなかったので推測混じりなのですが、どうも@<code>{refute}という名前をあまり好ましく思わない人がいたため、移行は行われなかったようです。恐らくレーサー。]
 //footnote[AssertNot][@<href>{https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Rails/RefuteMethods}]
 
+他にも、Railsでテストを書く際、@<code>{test}というメソッドを使用してテストを定義します。
+
+//list[test][test]{
+test "should get index" do
+  get users_url
+  assert_response :success
+end
+//}
+
+これもRailsが提供しているメソッドで、minitestだけを使用している場合、このメソッドは使用する事は出来ません。
+
 そのため、「Railsはmintiestを使用している」を正確ではなく、「Railsはminitestを拡張した独自の仕組みを使用している」が正確な表現になります。
 
 == テスト用のクラス
@@ -39,7 +50,7 @@ Railsでは、各ライブラリ毎に、そのライブラリの機能を提供
 //image[classtree][クラス図]{
 //}
 
-紙面の都合上大分割愛していますが、minitestのテスト用のクラスであるMinitest::Testを継承したActiveSupport::TestCaseというクラスがあり、各ライブラリのテストクラスはActiveSupport::TestCaseを継承している、という点だけ覚えておいて下さい。各クラスの詳細については次章で説明します。
+紙面の都合上大分割愛していますが、minitestのテスト用のクラスであるMinitest::Testを継承したActiveSupport::TestCaseというクラスがあり、各ライブラリのテストクラスはそのActiveSupport::TestCaseを継承している、という点だけ覚えておいて下さい。各クラスの詳細については次章で説明します。
 
 == まとめ
 
