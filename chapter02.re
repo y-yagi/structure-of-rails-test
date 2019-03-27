@@ -75,6 +75,30 @@ end
 アサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailer/TestHelper.html} を参照してください。
 
 == ActionView::TestCase
+
+名前からAction Viewのテンプレートに関するテスト用のクラスかと推測されるかと思うのですが、実際はちょっと異なり、viewのhelperのテストの為のクラスです。ActionView::TestCaseではhelerを使用する為に必要なcontrollerやviewの生成処理を行ってくれます。
+
+
+//list[action_view_test_case][ActionView::TestCase]{
+module UsersHelper
+  def link_to_user(user)
+    link_to "#{user.first_name} #{user.last_name}", user
+  end
+end
+
+class UsersHelperTest < ActionView::TestCase
+  test "link_to_user returns link with user name" do
+    user = User.find_by(first_name: "Yamada", last_name: "Taro")
+    assert_dom_equal %{<a href="/user/#{user.id}">Yamada Taro</a>},
+      link_to_user(user)
+  end
+end
+//}
+
+しかし、Rails 4.2よりhelperのテストはそもそも生成されなくなり@<fn>{helper}、このクラスが使用される事は無くなりました。また、helper単体でのテストはあまり意味が無い@<fn>{helper_test}のでは、という声もあり、このクラスを使用する事は基本的に無いかと思います。
+//footnote[helper][@<href>{https://github.com/rails/rails/commit/a34b6649d061977026db7124d834faccdf5bd8ef}]
+//footnote[helper_test][IntegrationテストやSystemテストviewのテストと合わせてやるのが良いのでは、という意見が多いです。]
+
 == ActionController::TestCase
 == ActionDispatch::IntegrationTest
 == ActionDispatch::SystemTestCase
