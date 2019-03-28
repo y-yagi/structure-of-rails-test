@@ -1,4 +1,4 @@
-= テスト用のクラス
+= テスト用のクラスたち
 
 本章では、Railsが提供しているテスト用のクラスについて説明します。
 
@@ -17,6 +17,7 @@ ActionDispatch::IntegrationTest
 ActionDispatch::SystemTestCase
 ActiveJob::TestCase
 ActionCable::TestCase
+ActionCable::Connection::TestCase
 ActionCable::Channel::TestCase
 ActionMailbox::TestCase
 Rails::Generators::TestCase
@@ -55,7 +56,7 @@ assert_deprecated do
 end
 //}
 
-クラスやメソッドについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActiveSupport/TestCase.html} を参照してください。
+クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActiveSupport/TestCase.html} を参照してください。
 
 == ActionMailer::TestCase
 
@@ -159,9 +160,127 @@ end
   end
 //}
 
+他にも、ActionDispatch::IntegrationTestではルーティングを確認する為のアサーションが使えるようになっています。
+
+//list[route_assertions][route assertions]{
+assert_routing '/home', controller: 'home', action: 'index'
+assert_routing 'controller/action/9', {id: "9", item: "square"}, {controller: "controller", action: "action"}, {}, {item: "square"}
+
+assert_recognizes({controller: 'items', action: 'list'}, 'items/list')
+//}
+
+クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionDispatch/IntegrationTest.html} を参照してください。
 
 == ActionDispatch::SystemTestCase
+
+ActionDispatch::SystemTestCaseはシステムテストの為のクラスです。Capybara@<fn>{capybara}を使用して簡単にブラウザを使用したテストを書けるようになっています。
+//footnote[capybara][@<href>{https://github.com/teamcapybara/capybara}]
+
+//list[system_test_example][システムテスト]{
+test "creating a User" do
+  visit users_url
+  click_on "New User"
+
+  fill_in "Email", with: @user.email
+  fill_in "Name", with: @user.name
+  click_on "Create User"
+
+  assert_text "User was successfully created"
+  click_on "Back"
+end
+//}
+
+ActionDispatch::SystemTestCaseはActionDispatch::IntegrationTestを継承しており、ActionDispatch::IntegrationTest + Capybaraのラッパー的な機能を提供しています。Capybaraで使用する為のドライバーはActionDispatch::SystemTestCaseで実装されており、ユーザはそのドライバーを指定する為のメソッドを使用すれば、Capybaraの設定を意識する事なくブラウザを指定する事ができるようになっています。
+
+//list[driven_by][ブラウザを指定]{
+class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  # テストでヘッドレスChromeを使用する
+  driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
+end
+//}
+
+Capybaraのラッパー以外の機能としては、スクリーンショットの取得機能があります。任意のタイミングでの取得は勿論、テスト失敗時に自動でスクリーンショットの取得を行ってくれるようになっています。なお、テスト失敗時のスクリーンショットの表示は、Rails 6.0だとスクリーンショットのファイル名のみです。ターミナル上でスクリーンショットを直接表示したい場合、`RAILS_SYSTEM_TESTING_SCREENSHOT`に適切な値を指定する必要があります。
+
 == ActionCable::TestCase
+
+Rails 6.0から追加されたAction Cableのテストの為のクラスです。Action Cableが追加された当初、ユニットテスト用のクラスはRails本体にありませんでした。これは、Action Cableに関するテストはブラウザを使用して行うテスト(現在のシステムテスト)で確認した方が正確で、ユニットテストは行う必要は無いのでは、という意見があった為です。
+
+しかし、API-onlyアプリケーションでもAction Cableを使う、というケースが出てきました。API-onlyアプリケーションだとシステムテストは使用出来ない為、ユニットテスト用の仕組みがあった方が良いよね、という声が強まり、はれてRails本体に機能が追加されました。
+
+なお、元々action-cable-testing@<fn>{action-cable-testing}というgemがあり、その機能をRails本体にインポート@<fn>{import-gem}した形になります。その為、Rails 6.0より前でAction Cableのユニットテストを行いたい場合、action-cable-testingを使用すれば、同等のテストが出来るようになっています。
+//footnote[action-cable-testing][@<href>{https://github.com/palkan/action-cable-testing}]
+//footnote[import-gem][インポート処理を行ったのもaction-cable-testingの作者です。元々Rails本体にPRを出していたのですが、中々マージされなかった為gemにされたようです。]
+
+ActionCable::TestCaseではテスト用のadapterを使用しブロードキャストの管理を行うようになっていて、メッセージが送信された/されてない等をテスト出来るようになっています。
+
+//list[assert_broadcasts][ActionCable::TestCase]{
+assert_broadcasts('messages', 1) do
+  ActionCable.server.broadcast 'messages', { text: 'hello' }
+end
+//}
+
+ActionCable::TestCaseはブロードキャストに関する処理のみ提供しており、コネクション、チャンネルに関するテストは、後述するActionCable::Connection::TestCase、ActionCable::Channel::TestCaseをそれぞれ使用する必要があります。
+
+== ActionCable::Connection::TestCase
+
+Action Cableのコネクションに関するテストの為のクラスです。接続処理の為のヘルパーメソッド(@<code>{connect})や、接続に失敗した事を確認する為のアサーション(@<code>{assert_reject_connection})が提供されています。
+
+//list[connect][ActionCable::Connection::TestCase]{
+# 適切なcookieが設定されていれば接続出来る
+test "connects with proper cookie" do
+  cookies["user_id"] = users(:john).id
+
+  connect
+
+  assert_equal users(:john).id, connection.user.id
+end
+
+# 適切なcookieが設定されていない場合接続エラーになる
+test "rejects connection without proper cookie" do
+  assert_reject_connection { connect }
+end
+//}
+
 == ActionCable::Channel::TestCase
+
+Action Cableのチャンネルに関するテストの為のクラスです。
+
 == ActionMailbox::TestCase
+
+Rails 6.0で追加されたAction Mailboxのテスト
+
 == Rails::Generators::TestCase
+
+Railsで提供しているgenerator(ファイルを生成する為の仕組み)は、カスタマイズ可能で、ユーザが任意のgeneratorを追加出来るようになっています。Rails::Generators::TestCaseはそのgeneratorのテストの為のクラスで、ユーザが追加したgeneratorに対してテストを行えるようになっています。
+
+例えば、下記のような"app/forms"配下にファイルを生成するgeneratorがあるとします。
+
+//list[generator][FormGenerator]{
+class FormGenerator < Rails::Generators::NamedBase
+  source_root File.expand_path('templates', __dir__)
+
+  def create_form_file
+    template "form.rb", File.join("app/forms", class_path, "#{file_name}_form.rb")
+  end
+end
+//}
+
+このgeneratorに対して、次のようにテストを記載する事ができます。
+
+//list[generator_test][FormGenerator]{
+class FormGeneratorTest < Rails::Generators::TestCase
+  tests FormGenerator
+  destination Rails.root.join('tmp/generators')
+  setup :prepare_destination
+
+  test "generator runs" do
+    assert_nothing_raised do
+      run_generator ["user"]
+    end
+
+    assert_file "app/forms/user_form.rb"
+  end
+end
+//}
+
+なお、テストを実行すると実際にgeneratorを実行し、ファイルの生成を行います。ファイルの生成先は@<code{destination}で指定出来ます。tmpのような、ゴミファイルが生成されても良いディレクトリ以外は指定しないよう注意してください。
