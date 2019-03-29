@@ -4,5 +4,6 @@ PREDEF:
 CHAPS:
   - chapter01.re
   - chapter02.re
+  - chapter03.re
 
 POSTDEF:

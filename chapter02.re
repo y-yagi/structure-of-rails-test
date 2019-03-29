@@ -36,7 +36,7 @@ Rails::Generators::TestCase
 //list[travel_to][travel_to]{
 Time.current # => Wed, 27 Mar 2019 11:56:31 JST +09:00
 
-# 1日前の移動
+# 1日前に移動
 travel 1.day do
   Time.current # => Tue, 26 Mar 2019 11:56:35 JST +09:00
 end
@@ -63,10 +63,12 @@ end
 メール(送信)のテストの為のクラスです。当然のことですが、テストで実際にメールを送信するわけにはいきません。ActionMailer::TestCaseでは、メール送信処理が実行されても実際のメールの送信は行わず、代わりに送信処理が実行されたメールを配列で管理するようにしています。合わせて、送信処理が呼ばれた(または呼ばれていない)事を確認する為のアサーションを提供しています。
 
 //list[assert_emails][assert_emails]{
-test "invite friend" do
-  # invite_friend_urlにPOSTしたら招待用のメールが送信される
-  assert_emails 1 do
-    post invite_friend_url, params: { email: 'friend@example.com' }
+class UserMailerTest < ActionMailer::TestCase
+  test "invite friend" do
+    # invite_friendを実行したら招待用のメールが送信される
+    assert_emails 1 do
+      User.invite(email: 'friend@example.com')
+    end
   end
 end
 //}
@@ -80,11 +82,13 @@ end
 ジョブのテストの為のクラスです。メールと事なり、ジョブはテストで実際に実行しても問題無い事が多いでしょう。しかし例えば、「1時間後に実行されるジョブ」があった場合、テストで実際に1時間待つ訳にはいきません。ActiveJob::TestCaseでは、ジョブの登録処理が行われたらそのジョブを内部で保持し、どのようなジョブが登録されたかを確認出来るようにしています。当然、その登録された内容を確認する為のアサーションも提供されています。
 
 //list[assert_enqueued_jobs][assert_enqueued_jobs]{
-test "withdrawal" do
-  user = User.last
-  # ユーザが退会したらLoggingJobが登録される
-  assert_enqueued_with(job: LoggingJob) do
-    user.withdrawal
+class LoggingJobTest < ActiveJob::TestCase
+  test "withdrawal" do
+    user = User.last
+    # ユーザが退会したらLoggingJobが登録される
+    assert_enqueued_with(job: LoggingJob) do
+      user.withdrawal
+    end
   end
 end
 //}
@@ -120,17 +124,19 @@ end
 コントローラーのテストの為のクラスです。特定のコントローラーのメソッドに対して、HTTPリクエストの送信及びレスポンスの確認ができるようになっています。
 
 //list[action_controller_test_case][ActionController::TestCase]{
-test "should get index" do
-  get :index
-  assert_response :success
-end
-
-test "should create user" do
-  assert_difference('User.count') do
-    post(:create, params: { user: { email: @user.email, name: @user.name } })
+class UsersControllerTest < ActionController::TestCase
+  test "should get index" do
+    get :index
+    assert_response :success
   end
 
-  assert_redirected_to user_url(User.last)
+  test "should create user" do
+    assert_difference('User.count') do
+      post(:create, params: { user: { email: @user.email, name: @user.name } })
+    end
+
+    assert_redirected_to user_url(User.last)
+  end
 end
 //}
 
@@ -146,6 +152,7 @@ end
 コントローラー(とルーティングテスト)の為のクラスです。基本的にはActionController::TestCaseと同じ目的です。ActionController::TestCaseと異なり、HTTPリクエスト先に任意のパスを指定出来し、ルーティングについても確認出来るようになっています。
 
 //list[integration_test][ActionDispatch::IntegrationTest]{
+class UsersControllerTest < ActionDispatch::IntegrationTest
   test "should get index" do
     get users_url
     assert_response :success
@@ -158,6 +165,7 @@ end
 
     assert_redirected_to user_url(User.last)
   end
+end
 //}
 
 他にも、ActionDispatch::IntegrationTestではルーティングを確認する為のアサーションが使えるようになっています。
@@ -201,6 +209,8 @@ end
 
 Capybaraのラッパー以外の機能としては、スクリーンショットの取得機能があります。任意のタイミングでの取得は勿論、テスト失敗時に自動でスクリーンショットの取得を行ってくれるようになっています。なお、テスト失敗時のスクリーンショットの表示は、Rails 6.0だとスクリーンショットのファイル名のみです。ターミナル上でスクリーンショットを直接表示したい場合、`RAILS_SYSTEM_TESTING_SCREENSHOT`に適切な値を指定する必要があります。
 
+クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionDispatch/SystemTestCase.html} を参照してください。
+
 == ActionCable::TestCase
 
 Rails 6.0から追加されたAction Cableのテストの為のクラスです。Action Cableが追加された当初、ユニットテスト用のクラスはRails本体にありませんでした。これは、Action Cableに関するテストはブラウザを使用して行うテスト(現在のシステムテスト)で確認した方が正確で、ユニットテストは行う必要は無いのでは、という意見があった為です。
@@ -220,6 +230,8 @@ end
 //}
 
 ActionCable::TestCaseはブロードキャストに関する処理のみ提供しており、コネクション、チャンネルに関するテストは、後述するActionCable::Connection::TestCase、ActionCable::Channel::TestCaseをそれぞれ使用する必要があります。
+
+アサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/TestHelper.html} を参照してください。
 
 == ActionCable::Connection::TestCase
 
@@ -241,13 +253,69 @@ test "rejects connection without proper cookie" do
 end
 //}
 
+クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/Connection/TestCase.html} を参照してください。
+
 == ActionCable::Channel::TestCase
 
-Action Cableのチャンネルに関するテストの為のクラスです。
+Action Cableのチャンネルのテストの為のクラスです。チャンネルに対してのsubscriptionの作成処理や、streamが正しく開始されていることを確認する為のアサーションを提供しています。
+
+//list[channel][ActionCable::Channel::TestCase]{
+class ChatChannelTest < ActionCable::Channel::TestCase
+  test "subscribes and stream for room" do
+    # "room"に対するsubscriptionを作成
+    subscribe room: "15"
+
+    # "room" 15に対するstreamが開始されていること
+    assert subscription.confirmed?
+    assert_has_stream "chat_15"
+  end
+end
+//}
+
+クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/Channel/TestCase.html} を参照してください。
 
 == ActionMailbox::TestCase
 
-Rails 6.0で追加されたAction Mailboxのテスト
+Rails 6.0で追加されたAction Mailboxのテストの為のクラスです。そもそもAction Mailboxの事を知らない方もいらっしゃるかと思いますので、まずはライブラリ自体の説明から。
+
+Action Mailboxは、名前の通りメール受信処理の為のライブラリです。メールの受信 -> メールの内容に応じた各種処理の実施 -> 処理が終わったメールの削除等の機能を提供しています。メールの受信はAmazon SESやSendGridなどのクラウドサービスと、Postfix等のMTA、両方からのメールの受信をサポートしています。
+
+「 メールの内容に応じた各種処理」というのは具体的には、Mailboxというクラスに定義します。
+
+//list[mailbox][Mailbox]{
+class InboxMailbox < ApplicationMailbox
+  def process
+    # メールの内容をDBに保存
+    ReceiveMail.create!(from: mail.from.first, to: mail.to.first, subject: mail.subject, body: mail.body)
+
+    user = User.find_by(email: mail.to.first)
+    # ユーザにメールを通知
+    user.notify_email(mail) if user
+  end
+end
+//}
+
+このMailboxクラスに対するユニットテストを行う為のクラスがActionMailbox::TestCaseです。ActionMailbox::TestCaseでは、受信メールを作成する為のヘルパーメソッドを提供しています。
+
+//list[mailbox_test][Mailbox Test]{
+class InboxMailboxTest < ActionMailbox::TestCase
+  test "receive mail" do
+    receive_inbound_email_from_mail \
+      to: '"someone" <someone@example.com>',
+      from: '"else" <else@example.com>',
+      subject: "Hello world!",
+      body: "Hello?"
+
+    mail = ReceiveMail.last
+    assert_equal "else@example.com", mail.from
+    assert_equal "someone@example.com", mail.to
+    assert_equal "Hello world!", mail.subject
+    assert_equal "Hello?", mail.body
+  end
+end
+//}
+
+他にもメールソースやfixtureから受信メールを作成する為のヘルパーメソッドが提供されています。詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailbox/TestHelper.html} を参照してください。
 
 == Rails::Generators::TestCase
 
@@ -283,4 +351,4 @@ class FormGeneratorTest < Rails::Generators::TestCase
 end
 //}
 
-なお、テストを実行すると実際にgeneratorを実行し、ファイルの生成を行います。ファイルの生成先は@<code{destination}で指定出来ます。tmpのような、ゴミファイルが生成されても良いディレクトリ以外は指定しないよう注意してください。
+なお、テストを実行すると実際にgeneratorを実行し、ファイルの生成を行います。ファイルの生成先は@<code>{destination}で指定出来ます。tmpのような、一時ファイルが生成されても良いディレクトリ以外は指定しないよう注意してください。
