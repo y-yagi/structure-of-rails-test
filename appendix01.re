@@ -13,9 +13,11 @@ API docに記載されているAPIだけがユーザ向けAPIで、それ以外�
 
 逆にいうと、内部向けAPIはバージョン間で非互換になる対応が行われます。内部向けAPIを使うとバージョンアップグレード時の手間が増えます(前のバージョンで通っていた処理がいきなりエラーで何故か落ちる、特定の引数を渡した時の挙動が変わってる等々)ので、内部向けAPIはRailsアプリケーションでは使用しないよう事を推奨します。どうしても使用したいAPIが内部向けになっている場合、そのAPIを公開APIにするようRailsにPRを送るか、内部向けAPIを使用している部分をgemにして、Railsアプリケーションとは別に管理しテストしやすくする事をオススメします。
 
+因みにAPI docには、リリース済みのgemに基づいた@<href>{https://api.rubyonrails.org/}と、GitHubの最新のコミットに基づいた@<href>{https://edgeapi.rubyonrails.org/}の2つがあります。@<href>{https://api.rubyonrails.org/}は基本的にはRailsがリリースされた時にしか更新されないので、最新の内容を確認したい場合、@<href>{https://edgeapi.rubyonrails.org/}の方でご確認して下さい。
+
 = rspec-rails
 
 rspecでRailsアプリケーションのテストで使用する場合rspec-gemを使用するかと思います。このgemで提供されているRailsの機能をテストする為の仕組みは、2章で紹介したクラスたちを使用しているのではなく、それらのクラスで使用しているモジュールを直接使用して実装されています。
 
 そのため、rspec-railsで提供しているテストの為の機能とRailsのテストの為の機能では若干挙動が異なります。また、rspec-railsではRails内部向けのAPIを使用している箇所もあります。そのため、Railsのバージョンをあげたらspecの挙動がおかしくなった、という事がありえます。ご注意下さい@<fn>{rspec-rails}。
-//footnote[rspec-rails][rspe-railsは開発がアクティブなので、Railsの正式リリースより前に対応が行われる事が殆どだと思いますが。]
+//footnote[rspec-rails][rspe-railsは開発がアクティブなのでRailsの正式リリースより前に対応が行われる事が殆どだと思いますが。]
