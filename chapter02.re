@@ -233,19 +233,23 @@ Capybaraのラッパー以外の機能としては、スクリーンショット
 
 == ActionCable::TestCase
 
-Rails 6.0から追加されたAction Cableのテストの為のクラスです。Action Cableが追加された当初、ユニットテスト用のクラスはRails本体にありませんでした。これは、Action Cableに関するテストはブラウザを使用して行うテスト(現在のシステムテスト)で確認した方が正確で、ユニットテストは行う必要は無いのでは、という意見があった為です。
+Rails 6.0から追加されたAction Cableのテスト用クラスです。Action Cableが追加された当初、Action Cableのテスト用の機能はRails本体にありませんでした。これは、Action Cableに関するテストはブラウザを使用して行うテスト(現在のシステムテスト)で確認した方が正確で、単体でテストは行う必要は無いのでは、という意見があった為です。
 
-しかし、API-onlyアプリケーションでもAction Cableを使う、というケースが出てきました。API-onlyアプリケーションだとシステムテストは使用出来ない為、ユニットテスト用の仕組みがあった方が良いよね、という声が強まり、はれてRails本体に機能が追加されました。
+しかし、API-onlyアプリケーションでもAction Cableを使う、というケースが出てきました。API-onlyアプリケーションだとシステムテストは使用出来ない為、専用のテストの仕組みがあった方が良いよね、という声が強まり、晴れてRails本体に機能が追加されました。
 
-なお、元々action-cable-testing@<fn>{action-cable-testing}というgemがあり、その機能をRails本体にインポート@<fn>{import-gem}した形になります。その為、Rails 6.0より前でAction Cableのユニットテストを行いたい場合、action-cable-testingを使用すれば、同等のテストが出来るようになっています。
+なお、元々action-cable-testing@<fn>{action-cable-testing}というgemがあり、その機能をRails本体にインポート@<fn>{import-gem}した形になります。その為、Rails 6.0より前でAction Cableのテストを行いたい場合、action-cable-testingを使用すれば、同等のテストが出来るようになっています。
 //footnote[action-cable-testing][@<href>{https://github.com/palkan/action-cable-testing}]
-//footnote[import-gem][インポート処理を行ったのもaction-cable-testingの作者です。元々Rails本体にPRを出していたのですが、中々マージされなかった為gemにされたようです。]
+//footnote[import-gem][Rails本体へのインポート処理を行ったのはaction-cable-testingの作者本人です。元々Rails本体にPRを出していたのですが、中々マージされなかった為gemにされたようです。]
 
 ActionCable::TestCaseではテスト用のadapterを使用しブロードキャストの管理を行うようになっていて、メッセージが送信された/されてない等をテスト出来るようになっています。
 
 //list[assert_broadcasts][ActionCable::TestCase]{
-assert_broadcasts('messages', 1) do
-  ActionCable.server.broadcast 'messages', { text: 'hello' }
+class ChartRoomTest < ActionCable::TestCase
+  test "broadcast message" do
+    assert_broadcasts('messages', 1) do
+      ActionCable.server.broadcast 'messages', { text: 'hello' }
+    end
+  end
 end
 //}
 
@@ -258,18 +262,20 @@ ActionCable::TestCaseはブロードキャストに関する処理のみ提供�
 Action Cableのコネクションに関するテストの為のクラスです。接続処理の為のヘルパーメソッド(@<code>{connect})や、接続に失敗した事を確認する為のアサーション(@<code>{assert_reject_connection})が提供されています。
 
 //list[connect][ActionCable::Connection::TestCase]{
-# 適切なcookieが設定されていれば接続出来る
-test "connects with proper cookie" do
-  cookies["user_id"] = users(:john).id
+class ApplicationCable::ConnectionTest < ActionCable::Connection::TestCase
+  # 適切なcookieが設定されていれば接続出来る
+  test "connects with proper cookie" do
+    cookies["user_id"] = users(:john).id
 
-  connect
+    connect
 
-  assert_equal users(:john).id, connection.user.id
-end
+    assert_equal users(:john).id, connection.user.id
+  end
 
-# 適切なcookieが設定されていない場合接続エラーになる
-test "rejects connection without proper cookie" do
-  assert_reject_connection { connect }
+  # 適切なcookieが設定されていない場合接続エラーになる
+  test "rejects connection without proper cookie" do
+    assert_reject_connection { connect }
+  end
 end
 //}
 
@@ -296,11 +302,11 @@ end
 
 == ActionMailbox::TestCase
 
-Rails 6.0で追加されたAction Mailboxのテストの為のクラスです。そもそもAction Mailboxの事を知らない方もいらっしゃるかと思いますので、まずはライブラリ自体の説明から。
+Rails 6.0で追加されたAction Mailboxのテストの為のクラスです。そもそもAction Mailboxの事を知らない方もいらっしゃるかと思いますので、まずはライブラリ自体の説明から行いたいと思います。
 
-Action Mailboxは、名前の通りメール受信処理の為のライブラリです。メールの受信 -> メールの内容に応じた各種処理の実施 -> 処理が終わったメールの削除等の機能を提供しています。メールの受信はAmazon SESやSendGridなどのクラウドサービスと、Postfix等のMTA、両方からのメールの受信をサポートしています。
+Action Mailboxは、メール受信処理の為のライブラリです。メールの受信 -> メールの内容に応じた各種処理の実施 -> 処理が終わったメールの削除等の機能を提供しています。メールの受信はAmazon SESやSendGridなどのクラウドサービスと、Postfix等のMTAをサポートしています。
 
-「 メールの内容に応じた各種処理」というのは具体的には、Mailboxというクラスに定義します。
+「 メールの内容に応じた各種処理」は、Mailboxというクラスに定義します。
 
 //list[mailbox][Mailbox]{
 class InboxMailbox < ApplicationMailbox
@@ -315,7 +321,7 @@ class InboxMailbox < ApplicationMailbox
 end
 //}
 
-このMailboxクラスに対するユニットテストを行う為のクラスがActionMailbox::TestCaseです。ActionMailbox::TestCaseでは、受信メールを作成する為のヘルパーメソッドを提供しています。
+このMailboxクラスに対するテストを行う為のクラスがActionMailbox::TestCaseです。ActionMailbox::TestCaseでは、受信メールを作成する為のヘルパーメソッドを提供しています。
 
 //list[mailbox_test][Mailbox Test]{
 class InboxMailboxTest < ActionMailbox::TestCase
@@ -335,7 +341,7 @@ class InboxMailboxTest < ActionMailbox::TestCase
 end
 //}
 
-他にもメールソースやfixtureから受信メールを作成する為のヘルパーメソッドが提供されています。
+他にもソースやfixtureから受信メールを作成する為のヘルパーメソッドが提供されています。
 
 クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailer/TestCase.html}をご参照下さい。
 
@@ -343,7 +349,7 @@ end
 
 Railsで提供しているgenerator(ファイルを生成する為の仕組み)は、カスタマイズ可能で、ユーザが任意のgeneratorを追加出来るようになっています。Rails::Generators::TestCaseはそのgeneratorのテストの為のクラスで、ユーザが追加したgeneratorに対してテストを行えるようになっています。
 
-例えば、下記のような"app/forms"配下にファイルを生成するgeneratorがあるとします。
+例えば、"app/forms"配下にファイルを生成するgeneratorがあるとします。
 
 //list[generator][FormGenerator]{
 class FormGenerator < Rails::Generators::NamedBase
@@ -355,7 +361,7 @@ class FormGenerator < Rails::Generators::NamedBase
 end
 //}
 
-このgeneratorに対して、次のようにテストを記載する事ができます。
+このgeneratorに対して、次のようにテストを行う事が出来るようになっています。
 
 //list[generator_test][FormGenerator]{
 class FormGeneratorTest < Rails::Generators::TestCase
@@ -373,6 +379,6 @@ class FormGeneratorTest < Rails::Generators::TestCase
 end
 //}
 
-なお、テストを実行すると実際にgeneratorを実行し、ファイルの生成を行います。ファイルの生成先は@<code>{destination}で指定出来ます。tmpのような、一時ファイルが生成されても良いディレクトリ以外は指定しないよう注意してください。
+なお、テストを実行すると実際にgeneratorを実行しファイルの生成を行います。ファイルの生成先は@<code>{destination}で指定出来ます。tmpのような、一時ファイルが生成されても良いディレクトリ以外は指定しないよう注意してください。
 
 クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/Rails/Generators/TestCase.html}をご参照下さい。
