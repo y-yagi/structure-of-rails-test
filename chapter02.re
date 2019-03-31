@@ -144,7 +144,8 @@ class UsersControllerTest < ActionController::TestCase
 
   test "should create user" do
     assert_difference('User.count') do
-      post(:create, params: { user: { email: @user.email, name: @user.name } })
+      post(:create, params:
+        { user: { email: @user.email, name: @user.name } })
     end
 
     assert_redirected_to user_url(User.last)
@@ -174,7 +175,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   test "should create user" do
     assert_difference('User.count') do
-      post users_url, params: { user: { email: @user.email, name: @user.name } }
+      post users_url, params:
+        { user: { email: @user.email, name: @user.name } }
     end
 
     assert_redirected_to user_url(User.last)
@@ -186,7 +188,8 @@ ActionDispatch::IntegrationTestではルーティングを確認する為のア�
 
 //list[route_assertions][route assertions]{
 assert_routing '/home', controller: 'home', action: 'index'
-assert_routing 'controller/action/9', {id: "9", item: "square"}, {controller: "controller", action: "action"}, {}, {item: "square"}
+assert_routing 'controller/action/9', {id: "9", item: "square"},
+  { controller: "controller", action: "action"}, {}, {item: "square" }
 
 assert_recognizes({controller: 'items', action: 'list'}, 'items/list')
 //}
@@ -312,7 +315,9 @@ Action Mailboxは、メール受信処理の為のライブラリです。メー
 class InboxMailbox < ApplicationMailbox
   def process
     # メールの内容をDBに保存
-    ReceiveMail.create!(from: mail.from.first, to: mail.to.first, subject: mail.subject, body: mail.body)
+    ReceiveMail.create!(
+      from: mail.from.first, to: mail.to.first,
+      subject: mail.subject, body: mail.body)
 
     user = User.find_by(email: mail.to.first)
     # ユーザにメールを通知
@@ -356,7 +361,8 @@ class FormGenerator < Rails::Generators::NamedBase
   source_root File.expand_path('templates', __dir__)
 
   def create_form_file
-    template "form.rb", File.join("app/forms", class_path, "#{file_name}_form.rb")
+    template "form.rb",
+      File.join("app/forms", class_path, "#{file_name}_form.rb")
   end
 end
 //}
