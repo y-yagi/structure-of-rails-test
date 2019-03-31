@@ -87,7 +87,8 @@ end
 
 バックグランドジョブ機能のテスト用クラスです。
 
-メールと異なりなり、バックグランドジョブはテストで実際に実行しても問題無い事が多いでしょう。しかし例えば、「1時間後に実行されるジョブ」があった場合、テストで実際に1時間待つ訳にはいきません。ActiveJob::TestCaseでは、ジョブの登録処理が行われたらそのジョブを内部で保持し、どのようなジョブが登録されたかを確認出来るようにしています。その登録された内容を確認する為のアサーションも提供されています。
+メールと異なり、バックグランドジョブはテストで実際に実行しても問題無い事が多いでしょう。しかし例えば、「1時間後に実行されるジョブ」があった場合、テストで実際に1時間待つ訳にはいきません。
+ActiveJob::TestCaseでは、ジョブの登録処理が行われたらそのジョブを内部で保持し、どのようなジョブが登録されたかを確認出来るようにしています。その登録された内容を確認する為のアサーションも提供されています。
 
 //list[assert_enqueued_jobs][assert_enqueued_jobs]{
 class LoggingJobTest < ActiveJob::TestCase
@@ -127,13 +128,12 @@ class UsersHelperTest < ActionView::TestCase
 end
 //}
 
-しかし、Rails 4.2からhelperのテストはそもそも生成されなくなり@<fn>{helper}、このクラスが使用される事は無くなりました。これはview helper単体でのテストはあまり意味が無いのでは、という意見によるものです@<fn>{helper_test}。そのため、クラス自体は残ったままですが、目にする事はあまりないのではと思います。
-//footnote[helper][@<href>{https://github.com/rails/rails/commit/a34b6649d061977026db7124d834faccdf5bd8ef}]
-//footnote[helper_test][IntegrationテストやSystemテストビューのテストと合わせてやるのが良いのでは、という意見が多いです。]
+しかし、Rails 4.2からhelperのテストはそもそも生成されなくなり、このクラスが使用される事は無くなりました。これはview helper単体でのテストはあまり意味が無いのでは、という意見によるものです@<fn>{helper_test}。そのため、クラス自体は残ったはいますが、目にする事はあまりないかと思います。
+//footnote[helper_test][インテグレーションテストやシステムテスト等でビューのテストとしてやるのが良いのでは、という意見が多いです。]
 
 == ActionController::TestCase
 
-コントローラーのテスト用クラスです。特定のコントローラーのメソッドに対して、HTTPリクエストの送信及びレスポンスの確認ができるようになっています。
+コントローラのテスト用クラスです。特定のコントローラのメソッドに対して、HTTPリクエストの送信及びレスポンスの確認ができるようになっています。
 
 //list[action_controller_test_case][ActionController::TestCase]{
 class UsersControllerTest < ActionController::TestCase
@@ -152,18 +152,18 @@ class UsersControllerTest < ActionController::TestCase
 end
 //}
 
-しかし同様にコントローラーのテストを行う為のクラスとしてActionDispatch::IntegrationTestがあります。
+同様にコントローラのテストを行う為のクラスとしてActionDispatch::IntegrationTestがあります。
 
-ActionDispatch::IntegrationTestだとルーティングもセットでテストが出来る@<fn>{routing}、HTTPリクエストがより実際のリクエストに近い形で送信される等のメリットがあるのですが、実行はActionController::TestCaseの方が高速だった為、コントローラーのテストには長らくActionController::TestCaseが使われるようになっていました。
-//footnote[routing][ActionController::TestCaseは送信先にコントローラーのアクション名を指定する為、ルーティングのテストは出来なかったのでした。]
+ActionDispatch::IntegrationTestだとルーティングもセットでテストが出来る@<fn>{routing}、HTTPリクエストがより実際のリクエストに近い形で送信される等のメリットがあるのですが、実行はActionController::TestCaseの方が高速だった為、コントローラのテストには長らくActionController::TestCaseが使われるようになっていました。
+//footnote[routing][ActionController::TestCaseは送信先にコントローラのアクション名を指定する為、ルーティングのテストは出来なかったのでした。]
 
-しかし、Rails 5.0でActionDispatch::IntegrationTestのパフォーマンスが改善され、実行速度の差は大分縮まりました。それにより、コントローラーのテストでもActionDispatch::IntegrationTestが使用される事が推奨されるようになり、scaffoldで生成するコントローラーのテストでもActionDispatch::IntegrationTestが使用されるようになりました。
+しかし、Rails 5.0でActionDispatch::IntegrationTestのパフォーマンスが改善され、実行速度の差は大分縮まりました。それにより、コントローラのテストでもActionDispatch::IntegrationTestが使用される事が推奨されるようになり、scaffoldで生成するコントローラのテストでもActionDispatch::IntegrationTestが使用されるようになりました。
 
 因みに、その対応の際にActionController::TestCaseはgemに切り出してRails本体から削除するという話があったのですが、何だかんだまだコードRails本体に残ったままになっています。とはいえ、機能追加等が行われる事は(恐らく)無いので、新規に追加するテストについてはActionDispatch::IntegrationTestを使用する事をおすすめします。
 
 == ActionDispatch::IntegrationTest
 
-コントローラー(とルーティングテスト)の為のクラスです。基本的にはActionController::TestCaseと同じ目的です。ActionController::TestCaseと異なり、HTTPリクエスト先に任意のパスを指定出来し、ルーティングについても確認出来るようになっています。
+コントローラとルーティングのテスト用クラスです。ActionController::TestCaseと異なり、HTTPリクエスト先に任意のパスを指定出来し、ルーティングについても確認出来るようになっています。
 
 //list[integration_test][ActionDispatch::IntegrationTest]{
 class UsersControllerTest < ActionDispatch::IntegrationTest
@@ -182,7 +182,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 end
 //}
 
-他にも、ActionDispatch::IntegrationTestではルーティングを確認する為のアサーションが使えるようになっています。
+ActionDispatch::IntegrationTestではルーティングを確認する為のアサーションが提供されています。
 
 //list[route_assertions][route assertions]{
 assert_routing '/home', controller: 'home', action: 'index'
@@ -191,7 +191,9 @@ assert_routing 'controller/action/9', {id: "9", item: "square"}, {controller: "c
 assert_recognizes({controller: 'items', action: 'list'}, 'items/list')
 //}
 
-クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionDispatch/IntegrationTest.html} を参照してください。
+また、ActionDispatch::IntegrationTestはRails 6.0から自動的にActionMailer::TestCase、ActiveJob::TestCaseで使用されているヘルパーモジュール(ActionMailer::TestHelper、ActiveJob::TestHelperを自動的にインクルードするようになりました。これにより、ActionDispatch::IntegrationTest内で行ったメールの送信、バックグランドジョブの登録についてもテスト出来るようになっています。
+
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionDispatch/IntegrationTest.html}をご参照下さい。
 
 == ActionDispatch::SystemTestCase
 
@@ -199,20 +201,24 @@ ActionDispatch::SystemTestCaseはシステムテストの為のクラスです�
 //footnote[capybara][@<href>{https://github.com/teamcapybara/capybara}]
 
 //list[system_test_example][システムテスト]{
-test "creating a User" do
-  visit users_url
-  click_on "New User"
+class UsersTest < ApplicationSystemTestCase
+  test "creating a User" do
+    visit users_url
+    click_on "New User"
 
-  fill_in "Email", with: @user.email
-  fill_in "Name", with: @user.name
-  click_on "Create User"
+    fill_in "Email", with: @user.email
+    fill_in "Name", with: @user.name
+    click_on "Create User"
 
-  assert_text "User was successfully created"
-  click_on "Back"
+    assert_text "User was successfully created"
+    click_on "Back"
+  end
 end
 //}
 
-ActionDispatch::SystemTestCaseはActionDispatch::IntegrationTestを継承しており、ActionDispatch::IntegrationTest + Capybaraのラッパー的な機能を提供しています。Capybaraで使用する為のドライバーはActionDispatch::SystemTestCaseで実装されており、ユーザはそのドライバーを指定する為のメソッドを使用すれば、Capybaraの設定を意識する事なくブラウザを指定する事ができるようになっています。
+ActionDispatch::SystemTestCaseはActionDispatch::IntegrationTestを継承しており、ActionDispatch::IntegrationTest + Capybaraのラッパー的な機能を提供しています。
+
+Capybaraで使用する為のドライバーはActionDispatch::SystemTestCaseで実装されており、ユーザはそのドライバーを指定する為のメソッドを使用すれば、Capybaraの設定を意識する事なくブラウザを指定する事ができるようになっています。
 
 //list[driven_by][ブラウザを指定]{
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
@@ -223,7 +229,7 @@ end
 
 Capybaraのラッパー以外の機能としては、スクリーンショットの取得機能があります。任意のタイミングでの取得は勿論、テスト失敗時に自動でスクリーンショットの取得を行ってくれるようになっています。なお、テスト失敗時のスクリーンショットの表示は、Rails 6.0だとスクリーンショットのファイル名のみです。ターミナル上でスクリーンショットを直接表示したい場合、`RAILS_SYSTEM_TESTING_SCREENSHOT`に適切な値を指定する必要があります。
 
-クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionDispatch/SystemTestCase.html} を参照してください。
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionDispatch/SystemTestCase.html}をご参照下さい。
 
 == ActionCable::TestCase
 
@@ -245,7 +251,7 @@ end
 
 ActionCable::TestCaseはブロードキャストに関する処理のみ提供しており、コネクション、チャンネルに関するテストは、後述するActionCable::Connection::TestCase、ActionCable::Channel::TestCaseをそれぞれ使用する必要があります。
 
-アサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/TestHelper.html} を参照してください。
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/TestHelper.html}をご参照下さい。
 
 == ActionCable::Connection::TestCase
 
@@ -267,7 +273,7 @@ test "rejects connection without proper cookie" do
 end
 //}
 
-クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/Connection/TestCase.html} を参照してください。
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/Connection/TestCase.html}をご参照下さい。
 
 == ActionCable::Channel::TestCase
 
@@ -286,7 +292,7 @@ class ChatChannelTest < ActionCable::Channel::TestCase
 end
 //}
 
-クラスやアサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/Channel/TestCase.html} を参照してください。
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionCable/Channel/TestCase.html}をご参照下さい。
 
 == ActionMailbox::TestCase
 
@@ -329,7 +335,9 @@ class InboxMailboxTest < ActionMailbox::TestCase
 end
 //}
 
-他にもメールソースやfixtureから受信メールを作成する為のヘルパーメソッドが提供されています。詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailbox/TestHelper.html} を参照してください。
+他にもメールソースやfixtureから受信メールを作成する為のヘルパーメソッドが提供されています。
+
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailer/TestCase.html}をご参照下さい。
 
 == Rails::Generators::TestCase
 
@@ -366,3 +374,5 @@ end
 //}
 
 なお、テストを実行すると実際にgeneratorを実行し、ファイルの生成を行います。ファイルの生成先は@<code>{destination}で指定出来ます。tmpのような、一時ファイルが生成されても良いディレクトリ以外は指定しないよう注意してください。
+
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/Rails/Generators/TestCase.html}をご参照下さい。
