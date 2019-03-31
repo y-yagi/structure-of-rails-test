@@ -4,7 +4,7 @@
 
 == クラスの一覧
 
-Railsでは、テスト用のクラスとして次に示すクラスを提供しています。
+Railsでは、テスト用のクラスとして次のクラスを提供しています。
 
 //table[test_classes][Railsが提供しているテスト用のクラス]{
 クラス名
@@ -23,15 +23,17 @@ ActionMailbox::TestCase
 Rails::Generators::TestCase
 //}
 
-基本的には各ライブラリ毎にクラスが提供されているので、ライブラリを使用した機能のテストをしたい場合、それぞれに提供されているテストを使えば良いようになっています。
+基本的には各ライブラリ毎にクラスが提供されています。そのため、ライブラリを使用した機能のテストをしたい場合、それぞれに提供されているテストを使えば良いようになっています。
 
 なお、Active RecordやActive Modelなどの一部ライブラリでは専用のクラスは提供されていません。これはActiveSupport::TestCaseを使用すれば十分で、特別な機能を提供する必要が無い、と判断されている為です。専用のクラスが無い場合は、ActiveSupport::TestCaseを使用するようにして下さい。
 
 == ActiveSupport::TestCase
 
-前章でも述べた通り、Railsが提供しているテストクラスのベースになっているクラスです。各テストクラス共通で使用したい機能がある場合、このクラスに機能を追加するようになっています。
+前章でも述べた通り、Railsが提供しているテストクラスのベースになっているクラスです。各テストクラス共通で使用したい機能がある場合、このクラスに追加するようになっています。
 
-例えば、@<code>{assert_not}等の@<code>{assert_not_x}で始まるメソッドはActiveSupport::TestCaseに定義されており、全てのテスト用のクラスで使用出来るようになっています。他にも、@<code>{travel}、@<code>{travel_to}という時間に関する処理を行う為のヘルパーメソッドが実装されているActiveSupport::Testing::TimeHelpersというmoduleがあります。このmoduleはActiveSupport::TestCaseでincludeされており、全てのテストクラスで使用出来るようになっています。
+例えば、@<code>{assert_not}等の@<code>{assert_not_x}で始まるメソッドはActiveSupport::TestCaseに定義されており、全てのテスト用のクラスで使用出来るようになっています。
+
+他にも、@<code>{travel}、@<code>{travel_to}という時間に関する処理を行う為のヘルパーメソッドが実装されているActiveSupport::Testing::TimeHelpersというモジュールがあります。このモジュールはActiveSupport::TestCaseでincludeされており、全てのテストクラスで使用出来るようになっています。
 
 //list[travel_to][travel_to]{
 Time.current # => Wed, 27 Mar 2019 11:56:31 JST +09:00
@@ -44,7 +46,7 @@ end
 Time.current # => Wed, 27 Mar 2019 11:56:38 JST +09:00
 //}
 
-また、ActiveSupport::TestCaseはRails自体のテストでも使用されています。そのため、Rails自体のテストをする為に必要なメソッドもこのクラスで使用出来るよう対応されています。
+ActiveSupport::TestCaseはRails自体のテストでも使用されています。そのため、Rails自体のテストをする為に必要なメソッドもこのクラスで使用出来るよう対応されています。
 
 例えば、何か既存の機能をdeprecateにした場合に、その機能がdeprecateになっている事を確認する為の@<code>{assert_deprecated}というアサーションがあります。
 
@@ -56,11 +58,15 @@ assert_deprecated do
 end
 //}
 
-クラスについての詳細は、API doc(@<href>{https://edgeapi.rubyonrails.org/classes/ActiveSupport/TestCase.html})をご参照下さい。
+他にも、標準入出力を抑止したり、モック処理用のメソッドが定義されています。
+
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActiveSupport/TestCase.html}をご参照下さい。
 
 == ActionMailer::TestCase
 
-メール(送信)のテストの為のクラスです。当然のことですが、テストで実際にメールを送信するわけにはいきません。ActionMailer::TestCaseでは、メール送信処理が実行されても実際のメールの送信は行わず、代わりに送信処理が実行されたメールを配列で管理するようにしています。合わせて、送信処理が呼ばれた(または呼ばれていない)事を確認する為のアサーションを提供しています。
+メール送信機能のテスト用クラスです。
+
+当然のことですが、テストで実際にメールを送信するわけにはいきません。ActionMailer::TestCaseでは、メール送信処理が実行されても実際のメールの送信は行わず、代わりに送信処理が実行されたメールを内部で保持し参照出来るようにしています。合わせて、送信処理が呼ばれた(または呼ばれていない)事を確認する為のアサーション等を提供しています。
 
 //list[assert_emails][assert_emails]{
 class UserMailerTest < ActionMailer::TestCase
@@ -75,11 +81,13 @@ end
 
 @<code>{assert_emails}は同期処理(@code{deliver_now})、非同期処理(@code{deliver_later})どちらで送信されたメールもチェックの対象になります。非同期で送信されたメールだけチェックしたい場合は、@<code>{assert_enqueued_emails}を使用する必要があります。
 
-アサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailer/TestHelper.html} を参照してください。
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailer/TestCase.html}をご参照下さい。
 
 == ActiveJob::TestCase
 
-ジョブのテストの為のクラスです。メールと事なり、ジョブはテストで実際に実行しても問題無い事が多いでしょう。しかし例えば、「1時間後に実行されるジョブ」があった場合、テストで実際に1時間待つ訳にはいきません。ActiveJob::TestCaseでは、ジョブの登録処理が行われたらそのジョブを内部で保持し、どのようなジョブが登録されたかを確認出来るようにしています。当然、その登録された内容を確認する為のアサーションも提供されています。
+バックグランドジョブ機能のテスト用クラスです。
+
+メールと異なりなり、バックグランドジョブはテストで実際に実行しても問題無い事が多いでしょう。しかし例えば、「1時間後に実行されるジョブ」があった場合、テストで実際に1時間待つ訳にはいきません。ActiveJob::TestCaseでは、ジョブの登録処理が行われたらそのジョブを内部で保持し、どのようなジョブが登録されたかを確認出来るようにしています。その登録された内容を確認する為のアサーションも提供されています。
 
 //list[assert_enqueued_jobs][assert_enqueued_jobs]{
 class LoggingJobTest < ActiveJob::TestCase
@@ -93,11 +101,15 @@ class LoggingJobTest < ActiveJob::TestCase
 end
 //}
 
-どのような引数が指定されたかチェックしたり、登録されたジョブを実行したりする事も出来るようになっています。アサーションについての詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActiveJob/TestHelper.html} を参照してください。
+アサーションではジョブに指定された引数をチェックしたり、登録されたジョブを実行したりする事も出来るようになっています
+
+クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActiveJob/TestCase.html}をご参照下さい。
 
 == ActionView::TestCase
 
-名前からAction Viewのテンプレートに関するテスト用のクラスかと推測されるかと思うのですが、実際はちょっと異なりviewのhelperのテスト用のクラスです。ActionView::TestCaseではhelerを使用する為に必要なcontrollerやviewの生成処理を行ってくれます。
+名前からAction Viewのテンプレートに関するテスト用のクラスかと推測されるかと思うのですが、実際はちょっと異なりview helperのテスト用クラスです。
+
+ActionView::TestCaseではview helperを使用する為に必要なcontrollerやviewの生成処理を行い、テスト単体でview helperメソッドが使用出来るようにしています。
 
 //list[action_view_test_case][ActionView::TestCase]{
 module UsersHelper
@@ -115,13 +127,13 @@ class UsersHelperTest < ActionView::TestCase
 end
 //}
 
-しかし、Rails 4.2よりhelperのテストはそもそも生成されなくなり@<fn>{helper}、このクラスが使用される事は無くなりました。また、helper単体でのテストはあまり意味が無い@<fn>{helper_test}のでは、という声もあり、このクラスを使用する事は基本的に無いかと思います。
+しかし、Rails 4.2からhelperのテストはそもそも生成されなくなり@<fn>{helper}、このクラスが使用される事は無くなりました。これはview helper単体でのテストはあまり意味が無いのでは、という意見によるものです@<fn>{helper_test}。そのため、クラス自体は残ったままですが、目にする事はあまりないのではと思います。
 //footnote[helper][@<href>{https://github.com/rails/rails/commit/a34b6649d061977026db7124d834faccdf5bd8ef}]
 //footnote[helper_test][IntegrationテストやSystemテストビューのテストと合わせてやるのが良いのでは、という意見が多いです。]
 
 == ActionController::TestCase
 
-コントローラーのテストの為のクラスです。特定のコントローラーのメソッドに対して、HTTPリクエストの送信及びレスポンスの確認ができるようになっています。
+コントローラーのテスト用クラスです。特定のコントローラーのメソッドに対して、HTTPリクエストの送信及びレスポンスの確認ができるようになっています。
 
 //list[action_controller_test_case][ActionController::TestCase]{
 class UsersControllerTest < ActionController::TestCase
@@ -140,12 +152,14 @@ class UsersControllerTest < ActionController::TestCase
 end
 //}
 
-しかし同様にコントローラーのテストを行う為のクラスとしてActionDispatch::IntegrationTestがあります。ActionDispatch::IntegrationTestだとルーティングもセットでテストが出来る@<fn>{routing}、HTTPリクエストがより実際のリクエストに近い形で送信される等のメリットがあるのですが、実行はActionController::TestCaseの方が高速だった為、コントローラーのテストには長らくActionController::TestCaseが使われるようになっていました。
+しかし同様にコントローラーのテストを行う為のクラスとしてActionDispatch::IntegrationTestがあります。
+
+ActionDispatch::IntegrationTestだとルーティングもセットでテストが出来る@<fn>{routing}、HTTPリクエストがより実際のリクエストに近い形で送信される等のメリットがあるのですが、実行はActionController::TestCaseの方が高速だった為、コントローラーのテストには長らくActionController::TestCaseが使われるようになっていました。
 //footnote[routing][ActionController::TestCaseは送信先にコントローラーのアクション名を指定する為、ルーティングのテストは出来なかったのでした。]
 
-しかし、Rails 5.0でActionDispatch::IntegrationTestのパフォーマンスが大幅に改善され、実行速度の差は大分縮まりました。結果、コントローラーのテストでもActionDispatch::IntegrationTestが使用される事が推奨されるようになり、scaffoldで生成するコントローラーのテストでもActionDispatch::IntegrationTestが使用されるようになりました。
+しかし、Rails 5.0でActionDispatch::IntegrationTestのパフォーマンスが改善され、実行速度の差は大分縮まりました。それにより、コントローラーのテストでもActionDispatch::IntegrationTestが使用される事が推奨されるようになり、scaffoldで生成するコントローラーのテストでもActionDispatch::IntegrationTestが使用されるようになりました。
 
-因みにその際にActionController::TestCaseはgemに切り出してRails本体から削除するという話があったのですが、何だかんだまだコードRails本体に残ったままになっています。とはいえ、機能追加等が行われる事は(恐らく)無いので、新規に追加するテストについてはActionDispatch::IntegrationTestを使用する事をおすすめします。
+因みに、その対応の際にActionController::TestCaseはgemに切り出してRails本体から削除するという話があったのですが、何だかんだまだコードRails本体に残ったままになっています。とはいえ、機能追加等が行われる事は(恐らく)無いので、新規に追加するテストについてはActionDispatch::IntegrationTestを使用する事をおすすめします。
 
 == ActionDispatch::IntegrationTest
 

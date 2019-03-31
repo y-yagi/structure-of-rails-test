@@ -52,8 +52,18 @@ Fixturesでは、テスト実行前にトランザクションを開始&テス�
 
 Railsでは、この問題に対応する為に異なるスレッドが同じデータベースのコネクションを使用する機能実装し、Fixturesを使用する場合のみその機能を有効化するようにしています。
 
-=== Fixture file
+=== File fixtures
 
+新規にRailsアプリケーションを作成すると、"test/fixtures"ディレクトリ配下に"files"というディレクトリが合わせて作成されます。このディレクトリにはテストで使用するファイル(テキストファイル、動画、PDF等々)を格納する為のディレクトリです。
+
+このディレクトリに格納されたファイルは、@<code>{file_fixture}というメソッドで簡単に参照出来るようになります。
+
+//list[file_fixture][file_fixture]{
+file_fixture("example.txt") #=> Pathnameクラスのインスタンス
+file_fixture("example.mp3").size
+//}
+
+名前が似ているのですが、これはここまで説明してきたFixturesとは別の単純にファイルを参照する為の仕組みです。"test/fixtures/files"はYAMLではなくただのファイルを格納する想定のディレクトリである、という事だけご認識頂ければと思います。
 
 == Test Runner
 
