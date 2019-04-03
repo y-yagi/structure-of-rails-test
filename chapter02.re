@@ -1,4 +1,4 @@
-= テスト用のクラスたち
+= テストの為のクラスたち
 
 本章では、Railsが提供しているテスト用のクラスについて説明します。
 
@@ -68,7 +68,7 @@ end
 
 当然のことですが、テストで実際にメールを送信するわけにはいきません。ActionMailer::TestCaseでは、メール送信処理が実行されても実際のメールの送信は行わず、代わりに送信処理が実行されたメールを内部で保持し参照出来るようにしています。合わせて、送信処理が呼ばれた(または呼ばれていない)事を確認する為のアサーション等を提供しています。
 
-//list[assert_emails][assert_emails]{
+//list[actionmailer_testcase][ActionMailer::TestCase]{
 class UserMailerTest < ActionMailer::TestCase
   test "invite friend" do
     # invite_friendを実行したら招待用のメールが送信される
@@ -79,7 +79,7 @@ class UserMailerTest < ActionMailer::TestCase
 end
 //}
 
-@<code>{assert_emails}は同期処理(@code{deliver_now})、非同期処理(@code{deliver_later})どちらで送信されたメールもチェックの対象になります。非同期で送信されたメールだけチェックしたい場合は、@<code>{assert_enqueued_emails}を使用する必要があります。
+@<code>{assert_emails}は同期処理(@<code>{deliver_now})、非同期処理(@<code>{deliver_later})どちらで送信されたメールもチェックの対象になります。非同期で送信されたメールだけチェックしたい場合は、@<code>{assert_enqueued_emails}を使用する必要があります。
 
 クラスについてのより詳細は、@<href>{https://edgeapi.rubyonrails.org/classes/ActionMailer/TestCase.html}をご参照下さい。
 
@@ -90,7 +90,7 @@ end
 メールと異なり、バックグランドジョブはテストで実際に実行しても問題無い事が多いでしょう。しかし例えば、「1時間後に実行されるジョブ」があった場合、テストで実際に1時間待つ訳にはいきません。
 ActiveJob::TestCaseでは、ジョブの登録処理が行われたらそのジョブを内部で保持し、どのようなジョブが登録されたかを確認出来るようにしています。その登録された内容を確認する為のアサーションも提供されています。
 
-//list[assert_enqueued_jobs][assert_enqueued_jobs]{
+//list[activejob_testcase][ActiveJob::TestCase]{
 class LoggingJobTest < ActiveJob::TestCase
   test "withdrawal" do
     user = User.last
@@ -203,7 +203,7 @@ assert_recognizes({controller: 'items', action: 'list'}, 'items/list')
 ActionDispatch::SystemTestCaseはシステムテストの為のクラスです。Capybara@<fn>{capybara}を使用して簡単にブラウザを使用したテストを書けるようになっています。
 //footnote[capybara][@<href>{https://github.com/teamcapybara/capybara}]
 
-//list[system_test_example][システムテスト]{
+//list[system_test_example][system test]{
 class UsersTest < ApplicationSystemTestCase
   test "creating a User" do
     visit users_url
@@ -223,7 +223,7 @@ ActionDispatch::SystemTestCaseはActionDispatch::IntegrationTestを継承して�
 
 Capybaraで使用する為のドライバーはActionDispatch::SystemTestCaseで実装されており、ユーザはそのドライバーを指定する為のメソッドを使用すれば、Capybaraの設定を意識する事なくブラウザを指定する事ができるようになっています。
 
-//list[driven_by][ブラウザを指定]{
+//list[driven_by][system testでブラウザを指定]{
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # テストでヘッドレスChromeを使用する
   driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
@@ -246,7 +246,7 @@ Rails 6.0から追加されたAction Cableのテスト用クラスです。Actio
 
 ActionCable::TestCaseではテスト用のadapterを使用しブロードキャストの管理を行うようになっていて、メッセージが送信された/されてない等をテスト出来るようになっています。
 
-//list[assert_broadcasts][ActionCable::TestCase]{
+//list[actioncable_testcase][ActionCable::TestCase]{
 class ChartRoomTest < ActionCable::TestCase
   test "broadcast message" do
     assert_broadcasts('messages', 1) do
@@ -264,7 +264,7 @@ ActionCable::TestCaseはブロードキャストに関する処理のみ提供�
 
 Action Cableのコネクションに関するテストの為のクラスです。接続処理の為のヘルパーメソッド(@<code>{connect})や、接続に失敗した事を確認する為のアサーション(@<code>{assert_reject_connection})が提供されています。
 
-//list[connect][ActionCable::Connection::TestCase]{
+//list[connect_testcase][ActionCable::Connection::TestCase]{
 class ApplicationCable::ConnectionTest < ActionCable::Connection::TestCase
   # 適切なcookieが設定されていれば接続出来る
   test "connects with proper cookie" do
@@ -288,7 +288,7 @@ end
 
 Action Cableのチャンネルのテストの為のクラスです。チャンネルに対してのsubscriptionの作成処理や、streamが正しく開始されていることを確認する為のアサーションを提供しています。
 
-//list[channel][ActionCable::Channel::TestCase]{
+//list[channel_testcase][ActionCable::Channel::TestCase]{
 class ChatChannelTest < ActionCable::Channel::TestCase
   test "subscribes and stream for room" do
     # "room"に対するsubscriptionを作成
@@ -328,7 +328,7 @@ end
 
 このMailboxクラスに対するテストを行う為のクラスがActionMailbox::TestCaseです。ActionMailbox::TestCaseでは、受信メールを作成する為のヘルパーメソッドを提供しています。
 
-//list[mailbox_test][Mailbox Test]{
+//list[mailbox_test][ActionMailbox::TestCase]{
 class InboxMailboxTest < ActionMailbox::TestCase
   test "receive mail" do
     receive_inbound_email_from_mail \
@@ -356,7 +356,7 @@ Railsで提供しているgenerator(ファイルを生成する為の仕組み)�
 
 例えば、"app/forms"配下にファイルを生成するgeneratorがあるとします。
 
-//list[generator][FormGenerator]{
+//list[generator][form generator]{
 class FormGenerator < Rails::Generators::NamedBase
   source_root File.expand_path('templates', __dir__)
 
@@ -369,7 +369,7 @@ end
 
 このgeneratorに対して、次のようにテストを行う事が出来るようになっています。
 
-//list[generator_test][FormGenerator]{
+//list[generator_test][form generator test]{
 class FormGeneratorTest < Rails::Generators::TestCase
   tests FormGenerator
   destination Rails.root.join('tmp/generators')

@@ -4,7 +4,9 @@
 
 == テストフレームワーク
 
-Rubyでテストフレームワークといえば、test-unit、minitest、RSpecの名前が挙がることが多いと思います。Railsは、かつてtest-unitを使っていて、現在はminitestを使用しています。Rails自体のテストも、Railsを使用するユーザに向けたテストの仕組みも、どちらもminitestを使用しています。日本でRailsアプリケーションの開発をされている場合、RSpecをお使いのケースが多いのではないかと思います。しかしRSpecはRailsがデフォルトでサポートしているテストフレームワークではなく、Rails自体にRSpecの為の機能は全くありません。
+Rubyでテストフレームワークといえば、test-unit、minitest、RSpecの名前が挙がることが多いと思います。Railsは、かつてtest-unitを使っていて、現在はminitestを使用しています。Rails自体のテストも、Railsを使用するユーザに向けたテストの仕組みも、どちらもminitestを使用しています。
+
+日本でRailsアプリケーションの開発をされている場合、RSpecをお使いのケースが多いのではないかと思います。しかしRSpecはRailsがデフォルトでサポートしているテストフレームワークではなく、Rails自体にRSpecの為の機能は全くありません。
 
 == minitestとRails
 
@@ -25,7 +27,7 @@ assert_not_equal 5, User.count
 元々test-unitには@<code>{assert_not}があり、test-unitからminitestに移行する際に互換性の為にこれらのメソッドが追加されました。
 
 その後、@<code>{refute}を使用するようにする? という提案もあったようなのですが、それは進まず、@<code>{assert_not}を使う形のままで落ち着いています@<fn>{refute}。
-//footnote[refute][当時の議論が全ては見つからなかったので推測混じりなのですが、@<code>{refute}という名前をあまり好ましく思わない人がいたため、移行は行われなかったようです。恐らくレーサー。]
+//footnote[refute][当時の議論が全ては見つからなかったので推測混じりなのですが、@<code>{refute}という名前をあまり好ましく思わない人がいたため、移行は行われなかったようです。]
 
 なお、@<code>{refute}ではなく@<code>{assert_not}を使用する事をチェックする為のRuboCopのcop@<fn>{AssertNot}があります。Railsのリポジトリではこのcopが有効化されており、@<code>{refute}は一切使われないようになっています。
 //footnote[AssertNot][@<href>{https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Rails/RefuteMethods}]
@@ -56,7 +58,7 @@ Railsでは、各ライブラリ毎に、そのライブラリの機能を提供
 
 == その他テストの為の機能たち
 
-テスト用のクラス以外に、テストデータを作成する為のFixturesや、テストを実行する為のTest Runner、並列にテストを実行する為のParallel Testingという機能もあります。これらについては3章で説明します。
+テスト用のクラス以外に、テストデータを作成する為のFixturesや、テストを実行する為のTest Runner、並列にテストを実行する為のParallel Testingという機能があります。これらについては3章で説明します。
 
 == まとめ
 
