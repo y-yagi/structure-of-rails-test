@@ -305,11 +305,9 @@ end
 
 == ActionMailbox::TestCase
 
-Rails 6.0で追加されたAction Mailboxのテストの為のクラスです。そもそもAction Mailboxの事を知らない方もいらっしゃるかと思いますので、まずはライブラリ自体の説明から行いたいと思います。
+Rails 6.0で追加されたAction Mailboxのテストの為のクラスです。Action Mailboxは、メール受信処理の為のライブラリです。メールの受信 -> メールの内容に応じた各種処理の実施 -> 処理が終わったメールの削除等の機能を提供しています。
 
-Action Mailboxは、メール受信処理の為のライブラリです。メールの受信 -> メールの内容に応じた各種処理の実施 -> 処理が終わったメールの削除等の機能を提供しています。メールの受信はAmazon SESやSendGridなどのクラウドサービスと、Postfix等のMTAをサポートしています。
-
-「 メールの内容に応じた各種処理」は、Mailboxというクラスに定義します。
+「メールの内容に応じた各種処理」は、Mailboxというクラスに定義します。
 
 //list[mailbox][Mailbox]{
 class InboxMailbox < ApplicationMailbox
