@@ -219,7 +219,7 @@ class UsersTest < ApplicationSystemTestCase
 end
 //}
 
-ActionDispatch::SystemTestCaseはActionDispatch::IntegrationTestを継承しており、ActionDispatch::IntegrationTest + Capybaraのラッパー的な機能を提供しています。
+Rails 5.2まではActionDispatch::IntegrationTestを継承していましたが、6.0からは他のクラス同様ActiveSupport::TestCaseを直接継承するようになっています。
 
 Capybaraで使用する為のドライバーはActionDispatch::SystemTestCaseで実装されており、ユーザはそのドライバーを指定する為のメソッドを使用すれば、Capybaraの設定を意識する事なくブラウザを指定する事ができるようになっています。
 
