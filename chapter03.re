@@ -131,7 +131,7 @@ end
 
 並列化は、デフォルトではプロセスをforkして行われます。forkが使えない環境では、代わりにスレッドを使用する事が出来ます。スレッドを使用したい場合は、@<code>{with}引数に、@<code>{:threads}と指定すればOKです
 
-//list[parallelize][parallelize]{
+//list[parallelize_threads][parallelize_threads]{
 class ActiveSupport::TestCase
   parallelize(workers: :number_of_processors, with: :threads)
 end
